@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Billing System</title>
+    <link rel="stylesheet" href="/static/bill.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>🛒 Billing System</h1>
+
+    <!-- Product Selection -->
+    <div class="product-form">
+        <label for="productSelect">Select Product:</label>
+        <select id="productSelect" onchange="populateProductDetails()">
+            <option value="">-- Select Product --</option>
+        </select>
+
+        <div class="product-details">
+            <p>Category: <span id="productCategory">-</span></p>
+            <p>Price: $<span id="productPrice">0</span></p>
+            <p>Available Quantity: <span id="productQty">0</span></p>
+        </div>
+
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" min="1" value="1" onchange="calculateTotal()">
+
+        <label for="discount">Discount (%):</label>
+        <input type="number" id="discount" min="0" max="100" value="0" onchange="calculateTotal()">
+
+        <p>Total Amount: $<span id="totalAmount">0</span></p>
+        <button onclick="addToBill()">➕ Add to Bill</button>
+    </div>
+
+    <!-- Bill Table -->
+    <div class="table-box">
+        <h2>Bill Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Discount</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="billTable"></tbody>
+        </table>
+        <p>Grand Total: $<span id="grandTotal">0</span></p>
+
+        <label for="paidAmount">Paid Amount:</label>
+        <input type="number" id="paidAmount" value="0" onchange="calculateBalance()">
+        <p>Balance: $<span id="balance">0</span></p>
+        
+        <div class="button-group">
+            <button class="save-btn" onclick="saveBill()">💾 Save Bill Details</button>
+            <button class="print-btn" onclick="printBill()">🖨 Print Bill</button>
+            <button class="installment-btn" onclick="openInstallmentModal()">💳 Installment Payment</button>
+            <button class="database-btn" onclick="saveToDatabase()">📊 Save to Database</button>
+            <button class="retrieve-btn" onclick="getBillDetails()">🔍 Get Bill Details</button>
+        </div>
+    </div>
+</div>
+
+<!-- Installment Modal -->
+<div id="installmentModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeInstallmentModal()">&times;</span>
+        <h2>💳 Installment Payment Plan</h2>
+        
+        <label for="customerName">Customer Name:</label>
+        <input type="text" id="customerName" placeholder="Enter customer name">
+        
+        <label for="customerPhone">Phone Number:</label>
+        <input type="text" id="customerPhone" placeholder="Enter phone number">
+        
+        <label for="initialPayment">Initial Payment:</label>
+        <input type="number" id="initialPayment" min="0" value="0" onchange="calculateInstallment()">
+        
+        <label for="installmentCount">Number of Installments:</label>
+        <input type="number" id="installmentCount" min="1" value="1" onchange="calculateInstallment()">
+        
+        <p>Remaining Amount: $<span id="remainingAmount">0</span></p>
+        <p>Per Installment: $<span id="perInstallment">0</span></p>
+        
+        <button class="save-btn" onclick="saveInstallmentPlan()">Save Installment Plan</button>
+    </div>
+</div>
+
+<!-- Bill Retrieval Modal -->
+<div id="billModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeBillModal()">&times;</span>
+        <h2>🔍 Retrieve Bill Details</h2>
+        
+        <label for="billIdInput">Enter Bill ID:</label>
+        <input type="text" id="billIdInput" placeholder="BILL-123456789">
+        
+        <button class="retrieve-btn" onclick="retrieveBill()">Search Bill</button>
+        
+        <div id="billDetailsDisplay"></div>
+    </div>
+</div>
+
+<script src="/static/bill.js"></script>
+</body>
+</html>

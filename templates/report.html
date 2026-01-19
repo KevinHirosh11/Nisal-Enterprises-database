@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Daily Summary</title>
+    <link rel="stylesheet" href="/static/report.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>📊 Daily Summary</h1>
+
+    <!-- Stock Summary Cards -->
+    <h2>Stock Summary</h2>
+    <div class="cards" id="stockCards">
+        <div class="card blue">
+            <h3>Total Products</h3>
+            <p id="totalProducts">0</p>
+        </div>
+        <div class="card green">
+            <h3>In Stock</h3>
+            <p id="inStock">0</p>
+        </div>
+        <div class="card orange">
+            <h3>Low Stock</h3>
+            <p id="lowStock">0</p>
+        </div>
+        <div class="card red">
+            <h3>Out of Stock</h3>
+            <p id="outStock">0</p>
+        </div>
+    </div>
+
+    <!-- Daily Bill Progress Cards -->
+    <h2>Daily Bill Progress</h2>
+    <div class="cards" id="billCards">
+        <div class="card purple">
+            <h3>Total Bills</h3>
+            <p id="totalBills">0</p>
+        </div>
+        <div class="card teal">
+            <h3>Pending Bills</h3>
+            <p id="pendingBills">0</p>
+        </div>
+        <div class="card pink">
+            <h3>Completed Bills</h3>
+            <p id="completedBills">0</p>
+        </div>
+    </div>
+
+    <!-- Generate Report Button -->
+    <div class="report">
+        <button onclick="generateReport()">📝 Generate Report</button>
+    </div>
+
+</div>
+
+<script src="/static/report.js"></script>
+</body>
+</html>

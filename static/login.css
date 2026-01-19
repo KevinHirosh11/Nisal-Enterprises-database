@@ -1,0 +1,100 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    height: 100vh;
+    background: linear-gradient(135deg, #ff512f, #dd2476, #24c6dc, #514a9d);
+    background-size: 300% 300%;
+    animation: gradientBG 8s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.login-wrapper {
+    text-align: center;
+}
+
+.brand {
+    font-size: 38px;
+    color: white;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+}
+
+.brand span {
+    color: #ffe600;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 80px;
+    width: 50rem;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: popIn 0.8s ease;
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.login-card h2 {
+    margin-bottom: 20px;
+    color: #444;
+    font-size: 3rem;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    font-size: 1.4rem;
+}
+
+.login-card input:focus {
+    border-color: #dd2476;
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(45deg, #ff512f, #dd2476);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+#error {
+    margin-top: 10px;
+    color: red;
+    font-size: 14px;
+}

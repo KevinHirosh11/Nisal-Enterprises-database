@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Stocks</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>📋 View Stocks</h1>
+
+    <input type="text" id="searchInput" placeholder="🔍 Search by product name" onkeyup="searchProducts()">
+
+    <div class="table-box">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="productTable">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="/static/view.js"></script>
+</body>
+</html>

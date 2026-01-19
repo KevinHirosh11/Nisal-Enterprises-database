@@ -1,0 +1,137 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    background: #f4f7fb;
+}
+
+.dashboard {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    background: linear-gradient(180deg, #667eea, #764ba2);
+    color: white;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    display: block;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.sidebar a:hover, .sidebar .active {
+    background: rgba(255,255,255,0.2);
+}
+.sidebar a:last-child {
+    background: rgba(255, 255, 255, 0.2);
+    margin-top: 30px;
+    color: #ffecec;
+}
+
+.sidebar a:last-child:hover {
+    background: rgba(255, 0, 0, 0.4);
+
+}
+
+.main {
+    flex: 1;
+    padding: 20px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.card {
+    padding: 20px;
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.card p {
+    font-size: 30px;
+    margin-top: 10px;
+}
+
+.blue { background: linear-gradient(45deg, #36d1dc, #5b86e5); }
+.green { background: linear-gradient(45deg, #11998e, #38ef7d); }
+.orange { background: linear-gradient(45deg, #f7971e, #ffd200); }
+.red { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
+
+.table-box {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.table-box h2 {
+    margin-bottom: 15px;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s;
+}
+
+#searchInput:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background: #667eea;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background: #f2f2f2;
+}
+
+.ok { color: green; font-weight: bold; }
+.low { color: orange; font-weight: bold; }
+.out { color: red; font-weight: bold; }

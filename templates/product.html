@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Cards</title>
+    <link rel="stylesheet" href="/static/product.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Product Management</h2>
+
+    <div class="cards">
+
+        <!-- ADD CARD -->
+        <div class="card add">
+            <h3>Add Product</h3>
+            <input type="text" id="addName" placeholder="Product Name">
+            <input type="text" id="addCategory" placeholder="Category">
+            <input type="number" id="addPrice" placeholder="Price">
+            <input type="number" id="addQty" placeholder="Quantity">
+            <button onclick="addProduct()">Add</button>
+        </div>
+
+        <!-- EDIT CARD -->
+        <div class="card edit">
+            <h3>Edit Product</h3>
+            <input type="number" id="editId" placeholder="Product ID">
+            <input type="text" id="editName" placeholder="New Name">
+            <input type="text" id="editCategory" placeholder="New Category">
+            <input type="number" id="editPrice" placeholder="New Price">
+            <input type="number" id="editQty" placeholder="New Quantity">
+            <button onclick="editProduct()">Update</button>
+        </div>
+
+        <!-- DELETE CARD -->
+        <div class="card delete">
+            <h3>Delete Product</h3>
+            <input type="number" id="deleteId" placeholder="Product ID">
+            <button onclick="deleteProduct()">Delete</button>
+        </div>
+
+    </div>
+
+    <p id="output"></p>
+</div>
+
+<script src="/static/product.js"></script>
+</body>
+</html>

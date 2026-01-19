@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Low Stock Products</title>
+    <link rel="stylesheet" href="/static/low_stock.css">
+</head>
+<body>
+
+<div class="main-wrapper">
+    
+    <!-- Low Stock Section -->
+    <div class="container">
+        <h1>⚠ Low Stock Products</h1>
+
+        <div class="card orange">
+            <h3>Total Low Stock Items</h3>
+            <p id="lowStockCount">0</p>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="lowStockTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Out of Stock Section -->
+    <div class="container">
+        <h1>❌ Out of Stock Products</h1>
+
+        <div class="card red">
+            <h3>Total Out of Stock Items</h3>
+            <p id="outStockCount">0</p>
+        </div>
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="outStockTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="/static/low_stock.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Management Dashboard</title>
+    <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+    <div class="sidebar">
+        <h2>📦 StockSys</h2>
+        <a href="/dashboard" class="active">🏠 Dashboard</a>
+        <a href="/product">➕ Product</a>
+        <a href="/view">📋 View Stock</a>
+        <a href="/low_stock">📉 Low Stock</a>
+        <a href="/report">📊 Reports</a>
+        <a href="/bill">🧾 Bill</a>
+        <a onclick="logout()">🚪 Logout</a>
+    </div>
+
+    <div class="main">
+
+        <div class="topbar">
+            <h1>Stock Management</h1>
+            <span>👤 Admin</span>
+        </div>
+
+        <div class="cards">
+            <div class="card blue">
+                <h3>Total Products</h3>
+                <p id="total">120</p>
+            </div>
+            <div class="card green">
+                <h3>In Stock</h3>
+                <p>95</p>
+            </div>
+            <div class="card orange">
+                <h3>Low Stock</h3>
+                <p>15</p>
+            </div>
+            <div class="card red">
+                <h3>Out of Stock</h3>
+                <p>10</p>
+            </div>
+        </div>
+
+        <div class="table-box">
+            <h2>📋 Product List</h2>
+            <input type="text" id="searchInput" placeholder="🔍 Search products..." onkeyup="searchProducts()">
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>001</td>
+                    <td>Rice</td>
+                    <td>Grocery</td>
+                    <td>50</td>
+                    <td class="ok">In Stock</td>
+                </tr>
+                <tr>
+                    <td>002</td>
+                    <td>Sugar</td>
+                    <td>Grocery</td>
+                    <td>8</td>
+                    <td class="low">Low</td>
+                </tr>
+                <tr>
+                    <td>003</td>
+                    <td>Soap</td>
+                    <td>Toiletries</td>
+                    <td>0</td>
+                    <td class="out">Out</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script src="/static/dashboard.js"></script>
+</body>
+</html>
