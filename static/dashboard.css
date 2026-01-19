@@ -7,6 +7,7 @@
 
 body {
     background: #f4f7fb;
+    margin-bottom: 0;
 }
 
 .dashboard {
@@ -135,3 +136,4 @@ tr:nth-child(even) {
 .ok { color: green; font-weight: bold; }
 .low { color: orange; font-weight: bold; }
 .out { color: red; font-weight: bold; }
+

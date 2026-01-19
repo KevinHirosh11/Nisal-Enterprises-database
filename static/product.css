@@ -1,9 +1,13 @@
-/* BODY & CONTAINER */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
 body {
-    font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #667eea, #764ba2);
-    padding: 20px;
     color: #333;
+    padding-top: 0px;
 }
 
 .container {
@@ -123,20 +127,4 @@ h2 {
 
 .delete button {
     background: linear-gradient(135deg, #fc4a1a, #f7b733);
-}
-
-#output {
-    margin-top: 30px;
-    font-weight: bold;
-    font-size: 20px;
-    color: #fff;
-    padding: 15px;
-    border-radius: 15px;
-    background: rgba(0,0,0,0.2);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    transition: transform 0.3s;
-}
-
-#output.show {
-    transform: scale(1.05);
 }

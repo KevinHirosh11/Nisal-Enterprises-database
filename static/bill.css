@@ -5,8 +5,9 @@
 
 body {
     background: linear-gradient(135deg, #667eea, #764ba2);
-    padding: 20px;
+    padding: 20px 20px 80px 20px;
     color: #333;
+    margin: 0;
 }
 
 .container {
@@ -234,3 +235,4 @@ tr:nth-child(even) {
     font-weight: bold;
     font-size: 18px;
 }
+

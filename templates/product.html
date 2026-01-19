@@ -17,7 +17,7 @@
             <h3>Add Product</h3>
             <input type="text" id="addName" placeholder="Product Name">
             <input type="text" id="addCategory" placeholder="Category">
-            <input type="number" id="addPrice" placeholder="Price">
+            <input type="number" id="addPrice" placeholder="Price" step="0.01">
             <input type="number" id="addQty" placeholder="Quantity">
             <button onclick="addProduct()">Add</button>
         </div>
@@ -28,7 +28,7 @@
             <input type="number" id="editId" placeholder="Product ID">
             <input type="text" id="editName" placeholder="New Name">
             <input type="text" id="editCategory" placeholder="New Category">
-            <input type="number" id="editPrice" placeholder="New Price">
+            <input type="number" id="editPrice" placeholder="New Price" step="0.01">
             <input type="number" id="editQty" placeholder="New Quantity">
             <button onclick="editProduct()">Update</button>
         </div>
@@ -41,9 +41,9 @@
         </div>
 
     </div>
-
-    <p id="output"></p>
 </div>
+
+
 
 <script src="/static/product.js"></script>
 </body>

@@ -13,6 +13,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding-bottom: 0;
 }
 
 @keyframes gradientBG {
@@ -97,4 +98,34 @@ button:hover {
     margin-top: 10px;
     color: red;
     font-size: 14px;
+}
+
+
+@media (max-width: 1080px) {
+    .login-card {
+        width: 80%;
+        height: 60%;
+        padding: 40px;
+    }
+
+    .login-card h2 {
+        font-size: 2.8rem;
+    }
+}
+
+@media (max-width: 720px) {
+    .login-card {
+        width: 90%;
+        padding: 20px;
+    }
+
+    .login-card h2 {
+        font-size: 2.4rem;
+    }
+}
+@media (max-height: 600px) {
+    .login-card {
+        width: 100%;
+        padding: 30px;
+    }
 }

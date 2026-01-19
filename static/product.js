@@ -1,48 +1,115 @@
-let products = [];
+async function addProduct() {
+    const name = document.getElementById('addName').value;
+    const category = document.getElementById('addCategory').value;
+    const price = document.getElementById('addPrice').value;
+    const quantity = document.getElementById('addQty').value;
 
-function addProduct() {
-    const name = addName.value;
-    const price = addPrice.value;
-    const qty = addQty.value;
-
-    if (!name || !price || !qty) {
-        alert("Fill all fields");
+    if (!name || !category || !price || !quantity) {
+        alert('Please fill all fields!');
         return;
     }
 
-    products.push({ name, price, qty });
-    output.innerText = "Product Added Successfully";
+    try {
+        const response = await fetch('/api/add-product', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_name: name,
+                category: category,
+                price: parseFloat(price),
+                quantity: parseInt(quantity)
+            })
+        });
 
-    addName.value = addPrice.value = addQty.value = "";
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Product added successfully!');
+            // Clear inputs
+            document.getElementById('addName').value = '';
+            document.getElementById('addCategory').value = '';
+            document.getElementById('addPrice').value = '';
+            document.getElementById('addQty').value = '';
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error adding product: ' + error.message);
+    }
 }
 
-function editProduct() {
-    const id = editId.value;
+async function editProduct() {
+    const id = document.getElementById('editId').value;
+    const name = document.getElementById('editName').value;
+    const category = document.getElementById('editCategory').value;
+    const price = document.getElementById('editPrice').value;
+    const quantity = document.getElementById('editQty').value;
 
-    if (!products[id]) {
-        alert("Invalid Product ID");
+    if (!id || !name || !category || !price || !quantity) {
+        alert('Please fill all fields!');
         return;
     }
 
-    products[id].name = editName.value || products[id].name;
-    products[id].price = editPrice.value || products[id].price;
-    products[id].qty = editQty.value || products[id].qty;
+    try {
+        const response = await fetch('/api/edit-product', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: parseInt(id),
+                product_name: name,
+                category: category,
+                price: parseFloat(price),
+                quantity: parseInt(quantity)
+            })
+        });
 
-    output.innerText = "Product Updated Successfully";
+        const result = await response.json();
 
-    editId.value = editName.value = editPrice.value = editQty.value = "";
+        if (result.success) {
+            alert('✅ Product updated successfully!');
+            document.getElementById('editId').value = '';
+            document.getElementById('editName').value = '';
+            document.getElementById('editCategory').value = '';
+            document.getElementById('editPrice').value = '';
+            document.getElementById('editQty').value = '';
+        } else {
+            alert('❌ Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('❌ Error updating product: ' + error.message);
+    }
 }
 
-function deleteProduct() {
-    const id = deleteId.value;
+async function deleteProduct() {
+    const id = document.getElementById('deleteId').value;
 
-    if (!products[id]) {
-        alert("Invalid Product ID");
+    if (!id) {
+        alert('Please enter Product ID!');
         return;
     }
 
-    products.splice(id, 1);
-    output.innerText = "Product Deleted Successfully";
+    if (!confirm('Are you sure you want to delete this product?')) {
+        return;
+    }
 
-    deleteId.value = "";
+    try {
+        const response = await fetch(`/api/delete-product/${id}`, {
+            method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Product deleted successfully!');
+            document.getElementById('deleteId').value = '';
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error deleting product: ' + error.message);
+    }
 }

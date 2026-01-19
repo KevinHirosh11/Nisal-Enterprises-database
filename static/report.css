@@ -1,14 +1,24 @@
 * {
-    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
 }
 
 body {
-    background: linear-gradient(135deg, #89f7fe, #66a6ff);
-    padding: 20px;
+    background: linear-gradient(135deg, #74acf5, #182cdd);
     color: #333;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
 }
-
 .container {
     max-width: 1000px;
     margin: auto;
