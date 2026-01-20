@@ -1,47 +1,62 @@
-// Example products array (replace with your backend data later)
-let products = [
-    { id: "001", name: "Rice", category: "Grocery", quantity: 50 },
-    { id: "002", name: "Sugar", category: "Grocery", quantity: 8 },
-    { id: "003", name: "Soap", category: "Toiletries", quantity: 0 },
-    { id: "004", name: "Milk", category: "Dairy", quantity: 20 },
-    { id: "005", name: "Oil", category: "Grocery", quantity: 5 }
-];
-
-// Function to render products in table
-function renderProducts(list = products) {
-    const table = document.getElementById("productTable");
-    table.innerHTML = "";
-
-    list.forEach(p => {
-        let status = "In Stock";
-        let statusClass = "status-ok";
-
-        if (p.quantity === 0) {
-            status = "Out";
-            statusClass = "status-out";
-        } else if (p.quantity < 10) {
-            status = "Low";
-            statusClass = "status-low";
+async function loadProducts() {
+    try {
+        const response = await fetch("/api/view");
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const products = await response.json();
+        
+        if (!Array.isArray(products)) {
+            throw new Error("Invalid data format received");
         }
 
-        table.innerHTML += `
-            <tr>
-                <td>${p.id}</td>
-                <td>${p.name}</td>
-                <td>${p.category}</td>
-                <td>${p.quantity}</td>
-                <td class="${statusClass}">${status}</td>
-            </tr>
-        `;
+        const tableBody = document.getElementById("productTable");
+        tableBody.innerHTML = "";
+
+        if (products.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No products found</td></tr>';
+            return;
+        }
+
+        products.forEach(product => {
+            let status = "In Stock";
+            let statusClass = "in";
+
+            if (product.quantity === 0) {
+                status = "Out of Stock";
+                statusClass = "out";
+            } else if (product.quantity <= 10) {
+                status = "Low Stock";
+                statusClass = "low";
+            }
+
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${product.product_id}</td>
+                    <td>${product.product_name}</td>
+                    <td>${product.category}</td>
+                    <td>${product.quantity}</td>
+                    <td class="${product.status === 'Out' ? 'out' : product.status === 'Low' ? 'low' : 'in'}">${status}</td>
+                </tr>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Error details:", error);
+        alert("Error loading products: " + error.message);
+    }
+}
+
+function searchProducts() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#productTable tr");
+    
+    rows.forEach(row => {
+        const productName = row.cells[1]?.textContent.toLowerCase() || "";
+        row.style.display = productName.includes(input) ? "" : "none";
     });
 }
 
-// Search function
-function searchProducts() {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    const filtered = products.filter(p => p.name.toLowerCase().includes(query));
-    renderProducts(filtered);
-}
-
-// Initial render
-renderProducts();
+window.onload = loadProducts;

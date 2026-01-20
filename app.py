@@ -227,9 +227,57 @@ def delete_product(product_id):
 def view():
     return render_template("view.html")
 
+@app.route("/api/view", methods=["GET"])
+def get_products():
+    
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM products")
+        products = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(products)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
 @app.route("/low_stock")
 def low_stock():
     return render_template("low_stock.html")
+    
+@app.route("/api/low_stock", methods=["GET"])
+def stock_status():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT * FROM products WHERE quantity BETWEEN 1 AND 10"
+        )
+        low_stock = cursor.fetchall()
+
+        cursor.execute(
+            "SELECT * FROM products WHERE quantity = 0"
+        )
+        out_stock = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "low_stock": low_stock,
+            "out_stock": out_stock
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/report")
 def report():
@@ -239,45 +287,82 @@ def report():
 def bill():
     return render_template("bill.html")
 
-@app.route("/api/save-bill", methods=["POST"])
-def save_bill():
-    """API endpoint to save bill to database"""
-    try:
-        bill_data = request.get_json()
-        
-        # Generate bill ID
-        bill_id = f"BILL-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        
-        # Add bill ID and timestamp
-        bill_data["billId"] = bill_id
-        bill_data["savedAt"] = datetime.now().isoformat()
-        
-        # Load existing database
-        db = load_database()
-        
-        # Add new bill
-        db["bills"].append(bill_data)
-        
-        # Save to file
-        save_database(db)
-        
-        return jsonify({"success": True, "billId": bill_id}), 200
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+@app.route("/api/bill", methods=["POST"])
+def create_bill():
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-@app.route("/api/get-bill/<bill_id>", methods=["GET"])
-def get_bill(bill_id):
-    """API endpoint to retrieve bill by ID"""
-    try:
-        db = load_database()
-        bill = next((b for b in db["bills"] if b["billId"] == bill_id), None)
-        
-        if bill:
-            return jsonify({"success": True, "bill": bill}), 200
-        else:
-            return jsonify({"success": False, "error": "Bill not found"}), 404
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+    cursor.execute("""
+        INSERT INTO bills (grand_total, paid_amount, balance)
+        VALUES (0, 0, 0)
+    """)
+
+    bill_id = cursor.lastrowid
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"success": True, "bill_id": bill_id})
+
+
+@app.route("/api/bill/item", methods=["POST"])
+def add_bill_item():
+    data = request.get_json()
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Insert bill item
+    cursor.execute("""
+        INSERT INTO bill_items
+        (bill_id, product_name, category, price, quantity, discount, total)
+        VALUES (%s,%s,%s,%s,%s,%s,%s)
+    """, (
+        data["bill_id"],
+        data["product_name"],
+        data["category"],
+        data["price"],
+        data["quantity"],
+        data["discount"],
+        data["total"]
+    ))
+
+    # DELETE product from products table
+    cursor.execute("""
+        DELETE FROM products WHERE product_id = %s
+    """, (data["product_id"],))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"success": True})
+
+@app.route("/api/bill", methods=["PUT"])
+def update_bill():
+    data = request.get_json()
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE bills
+        SET grand_total=%s, paid_amount=%s, balance=%s
+        WHERE bill_id=%s
+    """, (
+        data["grand_total"],
+        data["paid_amount"],
+        data["balance"],
+        data["bill_id"]
+    ))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"success": True})
+
+
 
 @app.route("/logout")
 def logout():
