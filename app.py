@@ -21,22 +21,6 @@ def get_db_connection():
         print(f"Database connection error: {err}")
         return None
 
-DATABASE_FILE = "bills_database.json"
-
-def load_database():
-    """Load bills from JSON file"""
-    if os.path.exists(DATABASE_FILE):
-        try:
-            with open(DATABASE_FILE, 'r') as f:
-                return json.load(f)
-        except json.JSONDecodeError:
-            return {"bills": [], "installments": []}
-    return {"bills": [], "installments": []}
-
-def save_database(data):
-    """Save bills to JSON file"""
-    with open(DATABASE_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
 
 @app.route("/")
 def login():
@@ -284,84 +268,149 @@ def report():
     return render_template("report.html")
 
 @app.route("/bill")
-def bill():
+def bill_page():
     return render_template("bill.html")
 
 @app.route("/api/bill", methods=["POST"])
-def create_bill():
+def save_bill():
     conn = get_db_connection()
-    cursor = conn.cursor()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
 
-    cursor.execute("""
-        INSERT INTO bills (grand_total, paid_amount, balance)
-        VALUES (0, 0, 0)
-    """)
+    cursor = None
+    try:
+        cursor = conn.cursor()
 
-    bill_id = cursor.lastrowid
-    conn.commit()
-    cursor.close()
-    conn.close()
+        data = request.get_json(force=True)
 
-    return jsonify({"success": True, "bill_id": bill_id})
+        grand_total = float(data.get("grandTotal", 0))
+        paid_amount = float(data.get("paidAmount", 0))
+        balance = float(data.get("balance", 0))
+        payment_type = data.get("paymentType", "UNKNOWN")
+        items = data.get("items", [])
+
+        if not items:
+            return jsonify({"error": "No bill items provided"}), 400
+
+        cursor.execute(
+            """
+            INSERT INTO bills (total_amount, paid_amount, balance)
+            VALUES (%s,%s,%s)
+            """,
+            (grand_total, paid_amount, balance)
+        )
+
+        bill_id = cursor.lastrowid 
+
+        # Save items & update stock
+        for item in items:
+            product_id = item.get("product_id")
+            qty = int(item.get("qty", 0))
+            price = float(item.get("price", 0))
+            discount = float(item.get("discount", 0))
+            total = float(item.get("total", 0))
+
+            if not product_id or qty <= 0:
+                return jsonify({"error": "Invalid item data"}), 400
+
+            cursor.execute(
+                """
+                INSERT INTO bill_items (bill_id, product_id, quantity, price, discount, total)
+                VALUES (%s,%s,%s,%s,%s,%s)
+                """,
+                (bill_id, product_id, qty, price, discount, total)
+            )
+
+            cursor.execute(
+                """
+                UPDATE products
+                SET quantity = quantity - %s
+                WHERE product_id = %s
+                """,
+                (qty, product_id)
+            )
+
+        conn.commit()
+
+        return jsonify({"success": True, "bill_id": bill_id})
+
+    except mysql.connector.Error as err:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": str(err)}), 500
+    except Exception as err:  
+        if conn:
+            conn.rollback()
+        return jsonify({"error": str(err)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
 
 
-@app.route("/api/bill/item", methods=["POST"])
-def add_bill_item():
-    data = request.get_json()
-
+@app.route("/api/installment", methods=["POST"])
+def save_installment():
     conn = get_db_connection()
-    cursor = conn.cursor()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
 
-    # Insert bill item
-    cursor.execute("""
-        INSERT INTO bill_items
-        (bill_id, product_name, category, price, quantity, discount, total)
-        VALUES (%s,%s,%s,%s,%s,%s,%s)
-    """, (
-        data["bill_id"],
-        data["product_name"],
-        data["category"],
-        data["price"],
-        data["quantity"],
-        data["discount"],
-        data["total"]
-    ))
+    cursor = None
+    try:
+        cursor = conn.cursor()
 
-    # DELETE product from products table
-    cursor.execute("""
-        DELETE FROM products WHERE product_id = %s
-    """, (data["product_id"],))
+        data = request.get_json(force=True)
+        bill_id = data.get("bill_id")
+        customer_name = data.get("customer_name")
+        customer_phone = data.get("customer_phone")
+        initial_payment = float(data.get("initial_payment", 0))
+        installment_count = int(data.get("installment_count", 1))
+        per_installment = float(data.get("per_installment", 0))
+        total_amount = float(data.get("total_amount", 0))
+        remaining_amount = total_amount - initial_payment
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        if not bill_id or not customer_name:
+            return jsonify({"error": "Bill ID and Customer Name required"}), 400
 
-    return jsonify({"success": True})
+        # Create installment record (matching actual table structure)
+        cursor.execute(
+            """
+            INSERT INTO installments (bill_id, customer_name, phone, initial_payment, remaining_amount, installment_count, per_installment)
+            VALUES (%s,%s,%s,%s,%s,%s,%s)
+            """,
+            (bill_id, customer_name, customer_phone, initial_payment, remaining_amount, installment_count, per_installment)
+        )
 
-@app.route("/api/bill", methods=["PUT"])
-def update_bill():
-    data = request.get_json()
+        installment_id = cursor.lastrowid
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+        # Create installment schedule
+        for i in range(1, installment_count + 1):
+            due_date = datetime.now().strftime('%Y-%m-%d')
+            cursor.execute(
+                """
+                INSERT INTO installment_schedule (installment_id, installment_no, amount, due_date, paid)
+                VALUES (%s,%s,%s,%s,%s)
+                """,
+                (installment_id, i, per_installment, due_date, 0)
+            )
 
-    cursor.execute("""
-        UPDATE bills
-        SET grand_total=%s, paid_amount=%s, balance=%s
-        WHERE bill_id=%s
-    """, (
-        data["grand_total"],
-        data["paid_amount"],
-        data["balance"],
-        data["bill_id"]
-    ))
+        conn.commit()
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        return jsonify({"success": True, "installment_id": installment_id})
 
-    return jsonify({"success": True})
-
+    except mysql.connector.Error as err:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": str(err)}), 500
+    except Exception as err:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": str(err)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route("/logout")
