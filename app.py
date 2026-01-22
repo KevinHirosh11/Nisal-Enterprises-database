@@ -66,6 +66,89 @@ def api_dashboard():
     finally:
         if conn and conn.is_connected():
             conn.close()
+
+
+@app.route("/api/report/daily")
+def daily_report():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        # Stock summary
+        cursor.execute("SELECT COUNT(*) AS total_products FROM products")
+        total_products = cursor.fetchone()["total_products"]
+
+        cursor.execute("SELECT COUNT(*) AS in_stock FROM products WHERE quantity > 10")
+        in_stock = cursor.fetchone()["in_stock"]
+
+        cursor.execute("SELECT COUNT(*) AS low_stock FROM products WHERE quantity > 0 AND quantity <= 10")
+        low_stock = cursor.fetchone()["low_stock"]
+
+        cursor.execute("SELECT COUNT(*) AS out_stock FROM products WHERE quantity = 0")
+        out_stock = cursor.fetchone()["out_stock"]
+
+        today = datetime.now().date()
+        daily_rows = []
+
+        try:
+            cursor.execute(
+                """
+                SELECT DATE(created_at) AS bill_date,
+                       COUNT(*) AS total_bills,
+                       SUM(CASE WHEN balance > 0 THEN 1 ELSE 0 END) AS pending_bills,
+                       SUM(CASE WHEN balance <= 0 THEN 1 ELSE 0 END) AS completed_bills,
+                       SUM(total_amount) AS total_amount,
+                       SUM(paid_amount) AS paid_amount,
+                       SUM(balance) AS balance
+                FROM bills
+                GROUP BY DATE(created_at)
+                ORDER BY bill_date DESC
+                LIMIT 30
+                """
+            )
+            daily_rows = cursor.fetchall()
+        except mysql.connector.Error as err:
+            # Fallback if created_at column is missing
+            cursor.execute(
+                """
+                SELECT CURDATE() AS bill_date,
+                       COUNT(*) AS total_bills,
+                       SUM(CASE WHEN balance > 0 THEN 1 ELSE 0 END) AS pending_bills,
+                       SUM(CASE WHEN balance <= 0 THEN 1 ELSE 0 END) AS completed_bills,
+                       SUM(total_amount) AS total_amount,
+                       SUM(paid_amount) AS paid_amount,
+                       SUM(balance) AS balance
+                FROM bills
+                """
+            )
+            row = cursor.fetchone()
+            if row:
+                daily_rows = [row]
+
+        return jsonify({
+            "stock": {
+                "total_products": total_products,
+                "in_stock": in_stock,
+                "low_stock": low_stock,
+                "out_stock": out_stock,
+            },
+            "daily": daily_rows,
+            "today": str(today)
+        })
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
             
 
 @app.route("/product")
@@ -349,6 +432,85 @@ def save_bill():
             conn.close()
 
 
+@app.route("/api/bill/<int:bill_id>", methods=["GET"])
+def get_bill(bill_id: int):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT bill_id, total_amount, paid_amount, balance
+            FROM bills
+            WHERE bill_id = %s
+            """,
+            (bill_id,)
+        )
+        bill = cursor.fetchone()
+        if not bill:
+            return jsonify({"error": "Bill not found"}), 404
+
+        cursor.execute(
+            """
+            SELECT bi.bill_item_id, bi.product_id, p.product_name, p.category,
+                   bi.quantity, bi.price, bi.discount, bi.total
+            FROM bill_items bi
+            LEFT JOIN products p ON p.product_id = bi.product_id
+            WHERE bi.bill_id = %s
+            ORDER BY bi.bill_item_id
+            """,
+            (bill_id,)
+        )
+        items = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT installment_id, bill_id, customer_name, phone,
+                   initial_payment, remaining_amount, installment_count, per_installment
+            FROM installments
+            WHERE bill_id = %s
+            ORDER BY installment_id DESC
+            LIMIT 1
+            """,
+            (bill_id,)
+        )
+        installment = cursor.fetchone()
+
+        schedule = []
+        if installment:
+            cursor.execute(
+                """
+                SELECT installment_no, amount, due_date, paid
+                FROM installment_schedule
+                WHERE installment_id = %s
+                ORDER BY installment_no
+                """,
+                (installment["installment_id"],)
+            )
+            schedule = cursor.fetchall()
+
+        return jsonify({
+            "bill": bill,
+            "items": items,
+            "installment": installment,
+            "schedule": schedule
+        })
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
+
 @app.route("/api/installment", methods=["POST"])
 def save_installment():
     conn = get_db_connection()
@@ -382,6 +544,22 @@ def save_installment():
         )
 
         installment_id = cursor.lastrowid
+
+        # Ensure schedule table exists to avoid missing-table errors in fresh databases
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS installment_schedule (
+                schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+                installment_id INT NOT NULL,
+                installment_no INT NOT NULL,
+                amount DECIMAL(10,2) NOT NULL,
+                due_date DATE NOT NULL,
+                paid TINYINT(1) NOT NULL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (installment_id) REFERENCES installments(installment_id) ON DELETE CASCADE
+            ) ENGINE=InnoDB;
+            """
+        )
 
         # Create installment schedule
         for i in range(1, installment_count + 1):

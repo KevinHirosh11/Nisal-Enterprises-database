@@ -23,6 +23,19 @@ h2 {
     text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
 
+.shortcut {
+    font-size: 0.65em;
+    color: #ddd;
+    font-weight: normal;
+    display: inline-block;
+    margin-left: 10px;
+    font-family: monospace;
+    background: rgba(0,0,0,0.2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-shadow: none;
+}
+
 .cards {
     display: flex;
     gap: 30px;

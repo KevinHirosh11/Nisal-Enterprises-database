@@ -11,7 +11,7 @@
     <h1>🛒 Billing System</h1>
 
     <!-- Product Selection -->
-    <div class="product-form">
+    <div class="product-form no-print">
         <label for="productSelect">Select Product:</label>
         <select id="productSelect" onchange="populateProductDetails()">
             <option value="">-- Select Product --</option>
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Bill Table -->
-    <div class="table-box">
+    <div class="table-box" id="billDetailsSection">
         <h2>Bill Details</h2>
         <table>
             <thead>
@@ -55,7 +55,7 @@
         <input type="number" id="paidAmount" value="0" onchange="calculateBalance()">
         <p>Balance: Rs <span id="balance">0</span></p>
         
-        <div class="button-group">
+        <div class="button-group no-print">
             <button class="save-btn" onclick="saveBill()">💾 Save Bill Details</button>
             <button class="print-btn" onclick="printBill()">🖨 Print Bill</button>
             <button class="installment-btn" onclick="openInstallmentModal()">💳 Installment Payment</button>

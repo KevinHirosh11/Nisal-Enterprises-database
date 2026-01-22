@@ -6,7 +6,7 @@ function login() {
     if (user === "" || pass === "") {
         error.textContent = "⚠ Please fill all fields!";
     } 
-    else if (user === "admin" && pass === "1234") {
+    else if (user === "navanjalee" && pass === "Nava@2004") {
         alert("🎉 Login Successful!");
         window.location.href = "/dashboard";
     } 

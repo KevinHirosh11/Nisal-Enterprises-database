@@ -1,3 +1,17 @@
+// Keyboard shortcut for add product
+document.addEventListener('keydown', (e) => {
+    // Ctrl+Shift+A to add product
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        document.getElementById('addName').focus();
+    }
+    // Enter in add quantity field to submit
+    if (e.key === 'Enter' && document.getElementById('addQty') === document.activeElement) {
+        e.preventDefault();
+        addProduct();
+    }
+});
+
 async function addProduct() {
     const name = document.getElementById('addName').value;
     const category = document.getElementById('addCategory').value;
@@ -27,11 +41,10 @@ async function addProduct() {
 
         if (result.success) {
             alert('Product added successfully!');
-            // Clear inputs
-            document.getElementById('addName').value = '';
-            document.getElementById('addCategory').value = '';
-            document.getElementById('addPrice').value = '';
-            document.getElementById('addQty').value = '';
+            // Reload page after 1 second
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
         } else {
             alert('Error: ' + result.error);
         }

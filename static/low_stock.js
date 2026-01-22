@@ -19,6 +19,7 @@ async function loadStockData() {
                     <td>${p.product_name}</td>
                     <td>${p.category}</td>
                     <td>${p.quantity}</td>
+                    <td>Rs ${Number(p.price || 0).toFixed(2)}</td>
                     <td style="color:orange;font-weight:bold;">Low Stock</td>
                 </tr>
             `;
@@ -31,6 +32,7 @@ async function loadStockData() {
                     <td>${p.product_name}</td>
                     <td>${p.category}</td>
                     <td>${p.quantity}</td>
+                    <td>Rs ${Number(p.price || 0).toFixed(2)}</td>
                     <td style="color:red;font-weight:bold;">Out of Stock</td>
                 </tr>
             `;

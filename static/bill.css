@@ -236,3 +236,21 @@ tr:nth-child(even) {
     font-size: 18px;
 }
 
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #billDetailsSection, #billDetailsSection * {
+        visibility: visible;
+    }
+    #billDetailsSection {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+

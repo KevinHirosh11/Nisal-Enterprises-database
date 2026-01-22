@@ -38,7 +38,8 @@ async function loadProducts() {
                     <td>${product.product_name}</td>
                     <td>${product.category}</td>
                     <td>${product.quantity}</td>
-                    <td class="${product.status === 'Out' ? 'out' : product.status === 'Low' ? 'low' : 'in'}">${status}</td>
+                    <td>Rs ${Number(product.price || 0).toFixed(2)}</td>
+                    <td class="${statusClass}">${status}</td>
                 </tr>
             `;
         });

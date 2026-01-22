@@ -325,5 +325,92 @@ function retrieveBill() {
         alert("Please enter a Bill ID");
         return;
     }
-    alert("Bill retrieval feature coming soon!");
+    fetch(`/api/bill/${encodeURIComponent(billId)}`)
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => Promise.reject(err));
+            }
+            return res.json();
+        })
+        .then(data => {
+            const container = document.getElementById("billDetailsDisplay");
+
+            if (!data.bill) {
+                container.innerHTML = "<p>No bill found.</p>";
+                return;
+            }
+
+            localStorage.setItem("currentBillId", data.bill.bill_id);
+
+            const itemsHtml = (data.items || []).map(item => `
+                <tr>
+                    <td>${item.product_name || ""}</td>
+                    <td>${item.category || ""}</td>
+                    <td>Rs ${item.price}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.discount}%</td>
+                    <td>Rs ${Number(item.total).toFixed(2)}</td>
+                </tr>
+            `).join("");
+
+            const scheduleHtml = (data.schedule || []).map(s => `
+                <tr>
+                    <td>${s.installment_no}</td>
+                    <td>Rs ${Number(s.amount).toFixed(2)}</td>
+                    <td>${s.due_date}</td>
+                    <td>${s.paid ? "Paid" : "Pending"}</td>
+                </tr>
+            `).join("");
+
+            container.innerHTML = `
+                <div class="bill-details">
+                    <h3>Bill #${data.bill.bill_id}</h3>
+                    <p>Total: Rs ${Number(data.bill.total_amount).toFixed(2)}</p>
+                    <p>Paid: Rs ${Number(data.bill.paid_amount).toFixed(2)}</p>
+                    <p>Balance: Rs ${Number(data.bill.balance).toFixed(2)}</p>
+
+                    <h4>Items</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Discount</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml || "<tr><td colspan='6'>No items</td></tr>"}
+                        </tbody>
+                    </table>
+
+                    ${data.installment ? `
+                        <h4>Installment Summary</h4>
+                        <p>Customer: ${data.installment.customer_name} (${data.installment.phone || "N/A"})</p>
+                        <p>Initial Payment: Rs ${Number(data.installment.initial_payment).toFixed(2)}</p>
+                        <p>Remaining: Rs ${Number(data.installment.remaining_amount).toFixed(2)}</p>
+                        <p>Installments: ${data.installment.installment_count} x Rs ${Number(data.installment.per_installment).toFixed(2)}</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Amount</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${scheduleHtml || "<tr><td colspan='4'>No schedule</td></tr>"}
+                            </tbody>
+                        </table>
+                    ` : ""}
+                </div>
+            `;
+        })
+        .catch(err => {
+            console.error("Error retrieving bill:", err);
+            alert(err.error || "Failed to retrieve bill");
+        });
 }
