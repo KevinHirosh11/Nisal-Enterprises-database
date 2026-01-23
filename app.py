@@ -6,7 +6,6 @@ import mysql.connector
 from flask_cors import CORS
 from datetime import datetime
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -22,7 +21,6 @@ def get_db_connection():
     except mysql.connector.Error as err:
         print(f"Database connection error: {err}")
         return None
-
 
 @app.route("/")
 def login():
