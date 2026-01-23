@@ -1,22 +1,33 @@
-from flask import Flask, render_template,redirect,url_for, request, jsonify
+from flask import Flask, render_template,redirect,url_for, request, jsonify, session
 import json
 import os
 import webbrowser
 import mysql.connector
 from flask_cors import CORS
 from datetime import datetime
+from functools import wraps
 
 app = Flask(__name__)
 CORS(app)
+app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session and request.remote_addr != '127.0.0.1':
+            return jsonify({"error": "Authentication required"}), 401
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def get_db_connection():
     try:
         return mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="", 
-            database="nisal_db"
+            host=os.getenv("DB_HOST", "localhost"),
+            user=os.getenv("DB_USER", "root"),
+            password=os.getenv("DB_PASSWORD", ""),
+            database=os.getenv("DB_NAME", "nisal_db")
         )
     except mysql.connector.Error as err:
         print(f"Database connection error: {err}")
@@ -52,9 +63,6 @@ def api_dashboard():
         cursor.execute("SELECT COUNT(*) FROM products WHERE quantity = 0")
         out_of_stock = cursor.fetchone()[0]
 
-        cursor.close()
-        conn.close()
-
         return jsonify({
             "products": total_products,
             "in_stock": in_stock,
@@ -64,6 +72,8 @@ def api_dashboard():
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
     finally:
+        if cursor:
+            cursor.close()
         if conn and conn.is_connected():
             conn.close()
 
@@ -189,23 +199,47 @@ def add_product():
     if not conn:
         return jsonify({"success": False, "error": "Database connection failed"}), 500
     
+    cursor = None
     try:
         data = request.get_json()
-        cursor = conn.cursor()
         
+        if not data:
+            return jsonify({"success": False, "error": "No JSON data provided"}), 400
+        
+        required_fields = ['product_name', 'category', 'price', 'quantity']
+        if not all(field in data for field in required_fields):
+            return jsonify({"success": False, "error": "Missing required fields"}), 400
+        
+        if not data['product_name'] or not data['category']:
+            return jsonify({"success": False, "error": "Product name and category cannot be empty"}), 400
+        
+        try:
+            price = float(data['price'])
+            quantity = int(data['quantity'])
+            if price < 0 or quantity < 0:
+                return jsonify({"success": False, "error": "Price and quantity cannot be negative"}), 400
+        except ValueError:
+            return jsonify({"success": False, "error": "Invalid price or quantity format"}), 400
+        
+        cursor = conn.cursor()
         query = "INSERT INTO products (product_name, category, price, quantity) VALUES (%s, %s, %s, %s)"
-        values = (data['product_name'], data['category'], data['price'], data['quantity'])
+        values = (data['product_name'], data['category'], price, quantity)
         
         cursor.execute(query, values)
         conn.commit()
         
-        cursor.close()
-        conn.close()
-        
         return jsonify({"success": True, "message": "Product added successfully"}), 200
     except mysql.connector.Error as err:
+        if conn:
+            conn.rollback()
+        return jsonify({"success": False, "error": str(err)}), 500
+    except Exception as err:
+        if conn:
+            conn.rollback()
         return jsonify({"success": False, "error": str(err)}), 500
     finally:
+        if cursor:
+            cursor.close()
         if conn and conn.is_connected():
             conn.close()
 
@@ -215,6 +249,7 @@ def edit_product():
     if not conn:
         return jsonify({"success": False, "error": "Database connection failed"}), 500
 
+    cursor = None
     try:
         data = request.get_json()
 
@@ -225,8 +260,19 @@ def edit_product():
         if not all(field in data for field in required_fields):
             return jsonify({"success": False, "error": "Missing required fields"}), 400
 
-        cursor = conn.cursor()
+        if not data['product_name'] or not data['category']:
+            return jsonify({"success": False, "error": "Product name and category cannot be empty"}), 400
 
+        try:
+            price = float(data["price"])
+            quantity = int(data["quantity"])
+            product_id = int(data["product_id"])
+            if price < 0 or quantity < 0:
+                return jsonify({"success": False, "error": "Price and quantity cannot be negative"}), 400
+        except ValueError:
+            return jsonify({"success": False, "error": "Invalid data type"}), 400
+
+        cursor = conn.cursor()
         query = """
             UPDATE products
             SET product_name = %s,
@@ -235,15 +281,7 @@ def edit_product():
                 quantity = %s
             WHERE product_id = %s
         """
-
-        values = (
-            data["product_name"],
-            data["category"],
-            float(data["price"]),
-            int(data["quantity"]),
-            int(data["product_id"])
-        )
-
+        values = (data["product_name"], data["category"], price, quantity, product_id)
         cursor.execute(query, values)
         conn.commit()
 
@@ -252,15 +290,18 @@ def edit_product():
 
         return jsonify({"success": True, "message": "Product updated successfully"})
 
-    except ValueError:
-        return jsonify({"success": False, "error": "Invalid data type"}), 400
-
-    except Exception as e:
+    except mysql.connector.Error as e:
+        if conn:
+            conn.rollback()
         return jsonify({"success": False, "error": str(e)}), 500
-
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
     finally:
-        if conn.is_connected():
+        if cursor:
             cursor.close()
+        if conn and conn.is_connected():
             conn.close()
 
 @app.route("/api/delete-product/<int:product_id>", methods=["DELETE"])
@@ -269,22 +310,30 @@ def delete_product(product_id):
     if not conn:
         return jsonify({"success": False, "error": "Database connection failed"}), 500
     
+    cursor = None
     try:
-        cursor = conn.cursor()
+        if product_id <= 0:
+            return jsonify({"success": False, "error": "Invalid product ID"}), 400
         
+        cursor = conn.cursor()
         cursor.execute("DELETE FROM products WHERE product_id=%s", (product_id,))
         conn.commit()
         
         if cursor.rowcount == 0:
             return jsonify({"success": False, "error": "Product not found"}), 404
         
-        cursor.close()
-        conn.close()
-        
         return jsonify({"success": True, "message": "Product deleted successfully"}), 200
     except mysql.connector.Error as err:
+        if conn:
+            conn.rollback()
+        return jsonify({"success": False, "error": str(err)}), 500
+    except Exception as err:
+        if conn:
+            conn.rollback()
         return jsonify({"success": False, "error": str(err)}), 500
     finally:
+        if cursor:
+            cursor.close()
         if conn and conn.is_connected():
             conn.close()
 
@@ -294,22 +343,25 @@ def view():
 
 @app.route("/api/view", methods=["GET"])
 def get_products():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
     
-
+    cursor = None
     try:
-        conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM products")
         products = cursor.fetchall()
         
-        cursor.close()
-        conn.close()
-        
         return jsonify(products)
     
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
+        if cursor:
+            cursor.close()
         if conn and conn.is_connected():
             conn.close()
 
@@ -319,8 +371,12 @@ def low_stock():
     
 @app.route("/api/low_stock", methods=["GET"])
 def stock_status():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+    
+    cursor = None
     try:
-        conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute(
@@ -333,16 +389,20 @@ def stock_status():
         )
         out_stock = cursor.fetchall()
 
-        cursor.close()
-        conn.close()
-
         return jsonify({
             "low_stock": low_stock,
             "out_stock": out_stock
         })
 
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
 
 @app.route("/report")
 def report():
@@ -441,12 +501,17 @@ def save_bill():
         cursor = conn.cursor()
 
         data = request.get_json(force=True)
+        
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
 
         grand_total = float(data.get("grandTotal", 0))
         paid_amount = float(data.get("paidAmount", 0))
         balance = float(data.get("balance", 0))
-        payment_type = data.get("paymentType", "UNKNOWN")
         items = data.get("items", [])
+
+        if grand_total < 0 or paid_amount < 0:
+            return jsonify({"error": "Amounts cannot be negative"}), 400
 
         if not items:
             return jsonify({"error": "No bill items provided"}), 400
@@ -470,6 +535,9 @@ def save_bill():
 
             if not product_id or qty <= 0:
                 return jsonify({"error": "Invalid item data"}), 400
+            
+            if price < 0 or discount < 0 or total < 0:
+                return jsonify({"error": "Item amounts cannot be negative"}), 400
 
             cursor.execute(
                 """
@@ -492,6 +560,10 @@ def save_bill():
 
         return jsonify({"success": True, "bill_id": bill_id})
 
+    except ValueError as e:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": "Invalid numeric value"}), 400
     except mysql.connector.Error as err:
         if conn:
             conn.rollback()
@@ -597,17 +669,27 @@ def save_installment():
         cursor = conn.cursor()
 
         data = request.get_json(force=True)
+        
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+        
         bill_id = data.get("bill_id")
         customer_name = data.get("customer_name")
-        customer_phone = data.get("customer_phone")
+        customer_phone = data.get("customer_phone", "")
         initial_payment = float(data.get("initial_payment", 0))
         installment_count = int(data.get("installment_count", 1))
         per_installment = float(data.get("per_installment", 0))
         total_amount = float(data.get("total_amount", 0))
-        remaining_amount = total_amount - initial_payment
 
         if not bill_id or not customer_name:
             return jsonify({"error": "Bill ID and Customer Name required"}), 400
+        
+        if initial_payment < 0 or installment_count <= 0 or per_installment < 0 or total_amount < 0:
+            return jsonify({"error": "Invalid payment amounts or count"}), 400
+        
+        remaining_amount = total_amount - initial_payment
+        if remaining_amount < 0:
+            return jsonify({"error": "Initial payment cannot exceed total amount"}), 400
 
         cursor.execute(
             """
@@ -648,6 +730,10 @@ def save_installment():
 
         return jsonify({"success": True, "installment_id": installment_id})
 
+    except ValueError as e:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": "Invalid numeric value"}), 400
     except mysql.connector.Error as err:
         if conn:
             conn.rollback()
