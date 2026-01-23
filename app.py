@@ -352,6 +352,84 @@ def report():
 def bill_page():
     return render_template("bill.html")
 
+
+@app.route("/bill_installments")
+def bill_installments_page():
+    return render_template("bill_installments.html")
+
+
+@app.route("/api/bill_installments", methods=["GET"])
+def api_bill_installments():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = None
+    try:
+        bill_id = request.args.get("bill_id", type=int)
+
+        cursor = conn.cursor(dictionary=True)
+
+        where_clause = ""
+        params = []
+        if bill_id is not None:
+            where_clause = "WHERE i.bill_id = %s"
+            params.append(bill_id)
+
+        cursor.execute(
+            f"""
+            SELECT i.installment_id,
+                   i.bill_id,
+                   i.customer_name,
+                   i.phone,
+                   i.initial_payment,
+                   i.remaining_amount,
+                   i.installment_count,
+                   i.per_installment,
+                   b.total_amount,
+                   b.paid_amount,
+                   b.balance
+            FROM installments i
+            LEFT JOIN bills b ON b.bill_id = i.bill_id
+            {where_clause}
+            ORDER BY i.bill_id DESC, i.installment_id DESC
+            """,
+            tuple(params)
+        )
+        plans = cursor.fetchall()
+
+        installment_ids = [p.get("installment_id") for p in plans if p.get("installment_id") is not None]
+        schedule_by_installment_id = {i: [] for i in installment_ids}
+
+        if installment_ids:
+            placeholders = ",".join(["%s"] * len(installment_ids))
+            cursor.execute(
+                f"""
+                SELECT installment_id, installment_no, amount, due_date, paid
+                FROM installment_schedule
+                WHERE installment_id IN ({placeholders})
+                ORDER BY installment_id, installment_no
+                """,
+                tuple(installment_ids)
+            )
+            for row in cursor.fetchall():
+                schedule_by_installment_id.setdefault(row["installment_id"], []).append(row)
+
+        for p in plans:
+            p["schedule"] = schedule_by_installment_id.get(p.get("installment_id"), [])
+
+        return jsonify(plans)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
 @app.route("/api/bill", methods=["POST"])
 def save_bill():
     conn = get_db_connection()

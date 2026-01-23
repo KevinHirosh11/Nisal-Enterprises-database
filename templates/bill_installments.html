@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Installments</title>
+    <link rel="stylesheet" href="/static/bill_installments.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>💳 Bill Installments</h1>
+
+    <div class="filters">
+        <input type="text" id="searchInput" placeholder="🔍 Search by Bill ID or customer name" onkeyup="searchInstallments()">
+        <button class="refresh" onclick="loadInstallments()">↻ Refresh</button>
+    </div>
+
+    <div class="table-box">
+        <table>
+            <thead>
+                <tr>
+                    <th>Bill ID</th>
+                    <th>Customer Name</th>
+                    <th>Phone</th>
+                    <th>Total (Rs)</th>
+                    <th>Initial (Rs)</th>
+                    <th>Remaining (Rs)</th>
+                    <th>Count</th>
+                    <th>Per (Rs)</th>
+                    <th>Schedule</th>
+                </tr>
+            </thead>
+            <tbody id="installmentTable"></tbody>
+        </table>
+    </div>
+</div>
+
+
+<script src="/static/bill_installments.js"></script>
+</body>
+</html>
