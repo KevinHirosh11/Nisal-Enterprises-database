@@ -1,9 +1,11 @@
 from flask import Flask, render_template,redirect,url_for, request, jsonify
 import json
 import os
+import webbrowser
 import mysql.connector
 from flask_cors import CORS
 from datetime import datetime
+
 
 app = Flask(__name__)
 CORS(app)
@@ -78,7 +80,6 @@ def daily_report():
     try:
         cursor = conn.cursor(dictionary=True)
 
-        # Stock summary
         cursor.execute("SELECT COUNT(*) AS total_products FROM products")
         total_products = cursor.fetchone()["total_products"]
 
@@ -112,7 +113,6 @@ def daily_report():
             )
             daily_rows = cursor.fetchall()
         except mysql.connector.Error as err:
-            # Fallback if created_at column is missing
             cursor.execute(
                 """
                 SELECT CURDATE() AS bill_date,
@@ -385,7 +385,6 @@ def save_bill():
 
         bill_id = cursor.lastrowid 
 
-        # Save items & update stock
         for item in items:
             product_id = item.get("product_id")
             qty = int(item.get("qty", 0))
@@ -534,7 +533,6 @@ def save_installment():
         if not bill_id or not customer_name:
             return jsonify({"error": "Bill ID and Customer Name required"}), 400
 
-        # Create installment record (matching actual table structure)
         cursor.execute(
             """
             INSERT INTO installments (bill_id, customer_name, phone, initial_payment, remaining_amount, installment_count, per_installment)
@@ -545,7 +543,6 @@ def save_installment():
 
         installment_id = cursor.lastrowid
 
-        # Ensure schedule table exists to avoid missing-table errors in fresh databases
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS installment_schedule (
@@ -561,7 +558,6 @@ def save_installment():
             """
         )
 
-        # Create installment schedule
         for i in range(1, installment_count + 1):
             due_date = datetime.now().strftime('%Y-%m-%d')
             cursor.execute(
@@ -596,4 +592,5 @@ def logout():
     return redirect(url_for("login"))
 
 if __name__ == "__main__":
+    webbrowser.open("http://127.0.0.1:5000/")
     app.run(debug=True)
