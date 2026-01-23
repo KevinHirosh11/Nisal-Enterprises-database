@@ -4,6 +4,7 @@ import os
 import mysql.connector
 from flask_cors import CORS
 from datetime import datetime
+import webbrowser
 
 app = Flask(__name__)
 CORS(app)
@@ -20,7 +21,6 @@ def get_db_connection():
     except mysql.connector.Error as err:
         print(f"Database connection error: {err}")
         return None
-
 
 @app.route("/")
 def login():
@@ -596,4 +596,5 @@ def logout():
     return redirect(url_for("login"))
 
 if __name__ == "__main__":
+    webbrowser.open("http://127.0.0.1:5000")
     app.run(debug=True)
