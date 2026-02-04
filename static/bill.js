@@ -2,6 +2,8 @@ let products = [];
 let billItems = [];
 let grandTotal = 0;
 
+let activeSearchIndex = -1;
+
 // Load products when page loads
 window.onload = function() {
     loadProducts();
@@ -14,6 +16,7 @@ function loadProducts() {
         .then(data => {
             products = data;
             populateProductDropdown();
+            setupProductSearch();
         })
         .catch(err => {
             console.error("Error loading products:", err);
@@ -31,6 +34,132 @@ function populateProductDropdown() {
         option.value = product.product_id;
         option.textContent = product.product_name;
         select.appendChild(option);
+    });
+}
+
+function setupProductSearch() {
+    const input = document.getElementById("productSearch");
+    const results = document.getElementById("productResults");
+    const select = document.getElementById("productSelect");
+
+    if (!input || !results || !select) {
+        return;
+    }
+
+    const clearResults = () => {
+        results.innerHTML = "";
+        activeSearchIndex = -1;
+    };
+
+    const normalize = (value) => String(value || "").toLowerCase().trim();
+
+    const getMatches = (query) => {
+        const q = normalize(query);
+        const list = Array.isArray(products) ? products : [];
+        if (!q) {
+            return list.slice(0, 12);
+        }
+        return list
+            .filter(p => normalize(p.product_name).includes(q) || normalize(p.category).includes(q))
+            .slice(0, 20);
+    };
+
+    const renderResults = (items) => {
+        results.innerHTML = "";
+        activeSearchIndex = -1;
+
+        if (!items || items.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "product-result-item";
+            empty.textContent = "No products found";
+            results.appendChild(empty);
+            return;
+        }
+
+        items.forEach((p, idx) => {
+            const row = document.createElement("div");
+            row.className = "product-result-item";
+            row.dataset.productId = p.product_id;
+            row.dataset.index = String(idx);
+
+            const title = document.createElement("div");
+            title.className = "product-result-title";
+            title.textContent = p.product_name;
+
+            const meta = document.createElement("div");
+            meta.className = "product-result-meta";
+            meta.textContent = `${p.category || "-"} • Rs ${p.price} • Stock ${p.quantity}`;
+
+            row.appendChild(title);
+            row.appendChild(meta);
+            results.appendChild(row);
+        });
+    };
+
+    const selectProductById = (productId) => {
+        if (!productId) return;
+        select.value = String(productId);
+        const product = products.find(p => String(p.product_id) === String(productId));
+        if (product) {
+            input.value = product.product_name;
+        }
+        clearResults();
+        populateProductDetails();
+    };
+
+    const refresh = () => {
+        renderResults(getMatches(input.value));
+    };
+
+    input.addEventListener("input", () => {
+        refresh();
+    });
+
+    input.addEventListener("focus", () => {
+        refresh();
+    });
+
+    input.addEventListener("keydown", (e) => {
+        const rows = Array.from(results.querySelectorAll(".product-result-item[data-product-id]"));
+        if (e.key === "Escape") {
+            clearResults();
+            return;
+        }
+        if (rows.length === 0) return;
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            activeSearchIndex = Math.min(activeSearchIndex + 1, rows.length - 1);
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            activeSearchIndex = Math.max(activeSearchIndex - 1, 0);
+        } else if (e.key === "Enter") {
+            if (activeSearchIndex >= 0 && activeSearchIndex < rows.length) {
+                e.preventDefault();
+                selectProductById(rows[activeSearchIndex].dataset.productId);
+            }
+            return;
+        } else {
+            return;
+        }
+
+        rows.forEach((r, i) => r.classList.toggle("active", i === activeSearchIndex));
+        if (activeSearchIndex >= 0 && rows[activeSearchIndex]) {
+            rows[activeSearchIndex].scrollIntoView({ block: "nearest" });
+        }
+    });
+
+    results.addEventListener("click", (e) => {
+        const row = e.target.closest(".product-result-item[data-product-id]");
+        if (!row) return;
+        selectProductById(row.dataset.productId);
+    });
+
+    document.addEventListener("click", (e) => {
+        if (e.target === input || results.contains(e.target)) {
+            return;
+        }
+        clearResults();
     });
 }
 
@@ -156,6 +285,10 @@ function calculateBalance() {
 // Reset form
 function resetForm() {
     document.getElementById("productSelect").value = "";
+    const searchInput = document.getElementById("productSearch");
+    if (searchInput) searchInput.value = "";
+    const results = document.getElementById("productResults");
+    if (results) results.innerHTML = "";
     document.getElementById("quantity").value = "1";
     document.getElementById("discount").value = "0";
     document.getElementById("productCategory").textContent = "-";

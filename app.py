@@ -9,29 +9,22 @@ from functools import wraps
 
 app = Flask(__name__)
 CORS(app)
-app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
-
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session and request.remote_addr != '127.0.0.1':
-            return jsonify({"error": "Authentication required"}), 401
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 def get_db_connection():
     try:
         return mysql.connector.connect(
-            host=os.getenv("DB_HOST", "localhost"),
-            user=os.getenv("DB_USER", "root"),
-            password=os.getenv("DB_PASSWORD", ""),
-            database=os.getenv("DB_NAME", "nisal_db")
+            host="127.0.0.1",
+            user="root",
+            password="",
+            database="nisal_db",
+            port=3306,
+            auth_plugin="mysql_native_password"
         )
     except mysql.connector.Error as err:
         print(f"Database connection error: {err}")
         return None
+
 
 @app.route("/")
 def login():
@@ -755,4 +748,4 @@ def logout():
 
 if __name__ == "__main__":
     webbrowser.open("http://127.0.0.1:5000/")
-    app.run(debug=True)
+    app.run(debug=False, use_reloader=False)

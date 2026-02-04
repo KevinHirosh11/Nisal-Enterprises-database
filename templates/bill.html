@@ -10,10 +10,12 @@
 <div class="container">
     <h1>🛒 Billing System</h1>
 
-    <!-- Product Selection -->
     <div class="product-form no-print">
-        <label for="productSelect">Select Product:</label>
-        <select id="productSelect" onchange="populateProductDetails()">
+        <label for="productSearch">Search Product:</label>
+        <input type="text" id="productSearch" placeholder="Type product name to search..." autocomplete="off">
+        <div id="productResults" class="product-results" aria-label="Product search results"></div>
+
+        <select id="productSelect" class="hidden-select" onchange="populateProductDetails()" tabindex="-1" aria-hidden="true">
             <option value="">-- Select Product --</option>
         </select>
 

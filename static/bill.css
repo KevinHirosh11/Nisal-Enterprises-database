@@ -43,6 +43,43 @@ h1 {
     font-size: 16px;
 }
 
+.hidden-select {
+    display: none;
+}
+
+.product-results {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.product-result-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.product-result-item:last-child {
+    border-bottom: none;
+}
+
+.product-result-item:hover,
+.product-result-item.active {
+    background: rgba(56, 146, 230, 0.12);
+}
+
+.product-result-title {
+    font-weight: 700;
+}
+
+.product-result-meta {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
 .product-details p {
     margin: 5px 0;
 }
