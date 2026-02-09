@@ -500,7 +500,7 @@ def api_bills():
 
         cursor.execute(
             """
-            SELECT bill_id, customer_name, total_amount, paid_amount, balance, created_at
+            SELECT bill_id, customer_name, total_amount, paid_amount, balance
             FROM bills
             ORDER BY bill_id DESC
             """
