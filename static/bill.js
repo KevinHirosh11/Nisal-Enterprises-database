@@ -304,6 +304,7 @@ function saveToDatabase() {
         return;
     }
     
+    const customerName = document.getElementById("billCustomerName").value.trim();
     const paidAmount = parseFloat(document.getElementById("paidAmount").value) || 0;
     const balance = grandTotal - paidAmount;
     
@@ -311,6 +312,7 @@ function saveToDatabase() {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
+            customerName: customerName,
             grandTotal: grandTotal,
             paidAmount: paidAmount,
             balance: balance,
@@ -336,6 +338,7 @@ function clearBill() {
     billItems = [];
     grandTotal = 0;
     updateBillTable();
+    document.getElementById("billCustomerName").value = "";
     document.getElementById("paidAmount").value = "0";
     document.getElementById("balance").textContent = "0";
     resetForm();
@@ -498,6 +501,7 @@ function retrieveBill() {
             container.innerHTML = `
                 <div class="bill-details">
                     <h3>Bill #${data.bill.bill_id}</h3>
+                    ${data.bill.customer_name ? `<p><strong>Customer: ${data.bill.customer_name}</strong></p>` : ""}
                     <p>Total: Rs ${Number(data.bill.total_amount).toFixed(2)}</p>
                     <p>Paid: Rs ${Number(data.bill.paid_amount).toFixed(2)}</p>
                     <p>Balance: Rs ${Number(data.bill.balance).toFixed(2)}</p>

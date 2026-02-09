@@ -498,6 +498,7 @@ def save_bill():
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
 
+        customer_name = data.get("customerName", "").strip()
         grand_total = float(data.get("grandTotal", 0))
         paid_amount = float(data.get("paidAmount", 0))
         balance = float(data.get("balance", 0))
@@ -511,10 +512,10 @@ def save_bill():
 
         cursor.execute(
             """
-            INSERT INTO bills (total_amount, paid_amount, balance)
-            VALUES (%s,%s,%s)
+            INSERT INTO bills (total_amount, paid_amount, balance, customer_name)
+            VALUES (%s,%s,%s,%s)
             """,
-            (grand_total, paid_amount, balance)
+            (grand_total, paid_amount, balance, customer_name if customer_name else None)
         )
 
         bill_id = cursor.lastrowid 
@@ -584,7 +585,7 @@ def get_bill(bill_id: int):
 
         cursor.execute(
             """
-            SELECT bill_id, total_amount, paid_amount, balance
+            SELECT bill_id, customer_name, total_amount, paid_amount, balance
             FROM bills
             WHERE bill_id = %s
             """,

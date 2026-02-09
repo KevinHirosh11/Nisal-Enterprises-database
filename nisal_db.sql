@@ -34,6 +34,7 @@ CREATE TABLE `bills` (
   `bill_id` int(11) NOT NULL,
   `bill_date` date NOT NULL,
   `customer_id` int(11) DEFAULT NULL,
+  `customer_name` varchar(255) DEFAULT NULL,
   `total_amount` decimal(10,2) DEFAULT NULL,
   `paid_amount` decimal(10,2) DEFAULT NULL,
   `balance` decimal(10,2) DEFAULT NULL
