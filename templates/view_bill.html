@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Bills</title>
+    <link rel="stylesheet" href="/static/view_bill.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>📋 View Bills</h1>
+
+    
+    <div class="search-section">
+        <input type="text" id="searchInput" placeholder="🔍 Search by Bill ID or Customer Name" onkeyup="searchBills()">
+        <select id="statusFilter" onchange="filterBills()" class="filter-select">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+        </select>
+    </div>
+
+    <div class="table-box">
+        <table>
+            <thead>
+                <tr>
+                    <th>Bill ID</th>
+                    <th>Customer Name</th>
+                    <th>Total Amount</th>
+                    <th>Paid Amount</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="billsTable">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="billDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeBillDetails()">&times;</span>
+        <h2>Bill Details</h2>
+
+        <div class="bill-summary">
+            <div class="summary-item">
+                <span class="label">Bill ID:</span>
+                <span id="modalBillId" class="value">-</span>
+            </div>
+            <div class="summary-item">  
+                <span class="label">Customer Name:</span>
+                <span id="modalCustomerName" class="value">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Total Amount:</span>
+                <span id="modalTotalAmount" class="value">Rs 0</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Paid Amount:</span>
+                <span id="modalPaidAmount" class="value">Rs 0</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Balance:</span>
+                <span id="modalBalance" class="value">Rs 0</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Status:</span>
+                <span id="modalStatus" class="value">-</span>
+            </div>
+        </div>
+
+        <div class="bill-items-section">
+            <h3>Bill Items</h3>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Discount (%)</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="billItemsTable">
+                </tbody>
+            </table>
+        </div>
+
+        <div id="installmentSection" class="installment-section" style="display: none;">
+            <h3>Installment Details</h3>
+            <div class="installment-info">
+                <div class="info-item">
+                    <span class="label">Initial Payment:</span>
+                    <span id="modalInitialPayment" class="value">Rs 0</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Remaining Amount:</span>
+                    <span id="modalRemainingAmount" class="value">Rs 0</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Installment Count:</span>
+                    <span id="modalInstallmentCount" class="value">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Per Installment:</span>
+                    <span id="modalPerInstallment" class="value">Rs 0</span>
+                </div>
+            </div>
+
+            <h4>Payment Schedule</h4>
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Installment No</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleTable">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal-buttons">
+            <button onclick="printBill()" class="btn-print">🖨️ Print</button>
+            <button onclick="closeBillDetails()" class="btn-close">Close</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/view_bill.js"></script>
+</body>
+</html>

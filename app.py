@@ -411,6 +411,11 @@ def bill_installments_page():
     return render_template("bill_installments.html")
 
 
+@app.route("/view_bill")
+def view_bill_page():
+    return render_template("view_bill.html")
+
+
 @app.route("/api/bill_installments", methods=["GET"])
 def api_bill_installments():
     conn = get_db_connection()
@@ -472,6 +477,37 @@ def api_bill_installments():
             p["schedule"] = schedule_by_installment_id.get(p.get("installment_id"), [])
 
         return jsonify(plans)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
+@app.route("/api/bills", methods=["GET"])
+def api_bills():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT bill_id, customer_name, total_amount, paid_amount, balance, created_at
+            FROM bills
+            ORDER BY bill_id DESC
+            """
+        )
+        bills = cursor.fetchall()
+
+        return jsonify(bills)
 
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
