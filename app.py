@@ -373,7 +373,7 @@ def stock_status():
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute(
-            "SELECT * FROM products WHERE quantity BETWEEN 1 AND 10"
+            "SELECT * FROM products WHERE quantity BETWEEN 1 AND 5"
         )
         low_stock = cursor.fetchall()
 
