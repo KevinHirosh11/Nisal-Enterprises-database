@@ -27,7 +27,7 @@ async function loadProducts() {
             if (product.quantity === 0) {
                 status = "Out of Stock";
                 statusClass = "out";
-            } else if (product.quantity <= 10) {
+            } else if (product.quantity <= 5) {
                 status = "Low Stock";
                 statusClass = "low";
             }

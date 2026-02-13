@@ -47,10 +47,10 @@ def api_dashboard():
         cursor.execute("SELECT COUNT(*) FROM products")
         total_products = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM products WHERE quantity > 10")
+        cursor.execute("SELECT COUNT(*) FROM products WHERE quantity > 5")
         in_stock = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM products WHERE quantity > 0 AND quantity <= 10")
+        cursor.execute("SELECT COUNT(*) FROM products WHERE quantity > 0 AND quantity <= 5")
         low_stock = cursor.fetchone()[0]
 
         cursor.execute("SELECT COUNT(*) FROM products WHERE quantity = 0")
@@ -84,10 +84,10 @@ def daily_report():
         cursor.execute("SELECT COUNT(*) AS total_products FROM products")
         total_products = cursor.fetchone()["total_products"]
 
-        cursor.execute("SELECT COUNT(*) AS in_stock FROM products WHERE quantity > 10")
+        cursor.execute("SELECT COUNT(*) AS in_stock FROM products WHERE quantity > 5")
         in_stock = cursor.fetchone()["in_stock"]
 
-        cursor.execute("SELECT COUNT(*) AS low_stock FROM products WHERE quantity > 0 AND quantity <= 10")
+        cursor.execute("SELECT COUNT(*) AS low_stock FROM products WHERE quantity > 0 AND quantity <= 5")
         low_stock = cursor.fetchone()["low_stock"]
 
         cursor.execute("SELECT COUNT(*) AS out_stock FROM products WHERE quantity = 0")
@@ -171,7 +171,7 @@ def api_products():
             qty = product.get('quantity', 0)
             if qty == 0:
                 product['status'] = 'Out'
-            elif qty <= 10:
+            elif qty <= 5:
                 product['status'] = 'Low'
             else:
                 product['status'] = 'In Stock'
