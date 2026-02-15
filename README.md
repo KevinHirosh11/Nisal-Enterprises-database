@@ -37,13 +37,17 @@ Database (MySQL)
 
 ## 🖥️ Screenshots
 
-(Add screenshots here.)
+### LOG IN
 
-Example:
+<img width="1677" height="874" alt="Screenshot 2026-02-15 151326" src="https://github.com/user-attachments/assets/5d79ec3b-d6e8-4616-b4cc-c2c30c386b2a" />
 
-```
-![Dashboard](screenshots/dashboard.png)
-```
+### Dashboard
+<img width="1672" height="880" alt="Screenshot 2026-02-15 151405" src="https://github.com/user-attachments/assets/2c5dfa0b-fffa-4245-bc80-06c7f23b595d" />
+
+### Add/Edit/Delete Products
+<img width="1656" height="875" alt="image" src="https://github.com/user-attachments/assets/0cf298ac-a33d-4b9e-88cf-fce3035db7e6" />
+
+
 
 ---
 
@@ -68,7 +72,7 @@ This system was developed for **Nisal Enterprises** to:
 
 ## 📄 License
 
-This project is for educational and business use.
+BSL-1.0 license
 
 ---
 
@@ -76,6 +80,6 @@ This project is for educational and business use.
 
 For support or questions:
 
-Email: [your-email@example.com](mailto:your-email@example.com)
+Email: kevinhirosh8@gmail.com
 
 ---
