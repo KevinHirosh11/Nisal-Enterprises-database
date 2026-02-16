@@ -500,7 +500,7 @@ def api_bills():
 
         cursor.execute(
             """
-            SELECT bill_id, customer_name, total_amount, paid_amount, balance
+            SELECT bill_id, bill_date, customer_name, total_amount, paid_amount, balance
             FROM bills
             ORDER BY bill_id DESC
             """
@@ -546,12 +546,14 @@ def save_bill():
         if not items:
             return jsonify({"error": "No bill items provided"}), 400
 
+        bill_date = datetime.now().strftime('%Y-%m-%d')
+
         cursor.execute(
             """
-            INSERT INTO bills (total_amount, paid_amount, balance, customer_name)
-            VALUES (%s,%s,%s,%s)
+            INSERT INTO bills (bill_date, total_amount, paid_amount, balance, customer_name)
+            VALUES (%s,%s,%s,%s,%s)
             """,
-            (grand_total, paid_amount, balance, customer_name if customer_name else None)
+            (bill_date, grand_total, paid_amount, balance, customer_name if customer_name else None)
         )
 
         bill_id = cursor.lastrowid 
@@ -621,7 +623,7 @@ def get_bill(bill_id: int):
 
         cursor.execute(
             """
-            SELECT bill_id, customer_name, total_amount, paid_amount, balance
+            SELECT bill_id, bill_date, customer_name, total_amount, paid_amount, balance
             FROM bills
             WHERE bill_id = %s
             """,

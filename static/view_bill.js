@@ -1,6 +1,20 @@
 let allBills = [];
 let filteredBills = [];
 
+function formatDate(dateString) {
+    if (!dateString || dateString === "N/A" || dateString === "0000-00-00") {
+        return "N/A";
+    }
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        return "N/A";
+    }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 window.onload = function() {
     loadBills();
 };
@@ -24,7 +38,7 @@ function displayBills(bills) {
     tableBody.innerHTML = "";
 
     if (bills.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No bills found</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">No bills found</td></tr>';
         return;
     }
 
@@ -32,9 +46,11 @@ function displayBills(bills) {
         const row = document.createElement("tr");
         const status = bill.balance <= 0 ? "paid" : "pending";
         const statusText = bill.balance <= 0 ? "Paid" : "Pending";
+        const billDate = formatDate(bill.bill_date);
 
         row.innerHTML = `
             <td>#${bill.bill_id}</td>
+            <td>${billDate}</td>
             <td>${bill.customer_name || "N/A"}</td>
             <td>Rs ${parseFloat(bill.total_amount).toFixed(2)}</td>
             <td>Rs ${parseFloat(bill.paid_amount).toFixed(2)}</td>
@@ -89,6 +105,7 @@ function displayBillDetails(data) {
     const schedule = data.schedule;
 
     document.getElementById("modalBillId").textContent = `#${bill.bill_id}`;
+    document.getElementById("modalBillDate").textContent = formatDate(bill.bill_date);
     document.getElementById("modalCustomerName").textContent = bill.customer_name || "N/A";
     document.getElementById("modalTotalAmount").textContent = `Rs ${parseFloat(bill.total_amount).toFixed(2)}`;
     document.getElementById("modalPaidAmount").textContent = `Rs ${parseFloat(bill.paid_amount).toFixed(2)}`;
