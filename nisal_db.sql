@@ -183,6 +183,39 @@ INSERT INTO `products` (`product_id`, `product_name`, `category`, `price`, `quan
 (9, 'clock', 'light clock', 1000.00, 30, '2026-01-22 13:26:42'),
 (10, 'umbrellla', 'short size', 1500.00, 17, '2026-01-22 13:30:08');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `seettu_orders`
+--
+
+DROP TABLE IF EXISTS `seettu_orders`;
+CREATE TABLE `seettu_orders` (
+  `seettu_id` int(11) NOT NULL,
+  `customer_name` varchar(150) DEFAULT NULL,
+  `customer_phone` varchar(20) DEFAULT NULL,
+  `customer_id_number` varchar(50) DEFAULT NULL,
+  `customer_address` varchar(255) DEFAULT NULL,
+  `total_amount` decimal(10,2) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `seettu_items`
+--
+
+DROP TABLE IF EXISTS `seettu_items`;
+CREATE TABLE `seettu_items` (
+  `seettu_item_id` int(11) NOT NULL,
+  `seettu_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `total` decimal(10,2) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -229,6 +262,20 @@ ALTER TABLE `products`
   ADD PRIMARY KEY (`product_id`);
 
 --
+-- Indexes for table `seettu_orders`
+--
+ALTER TABLE `seettu_orders`
+  ADD PRIMARY KEY (`seettu_id`);
+
+--
+-- Indexes for table `seettu_items`
+--
+ALTER TABLE `seettu_items`
+  ADD PRIMARY KEY (`seettu_item_id`),
+  ADD KEY `seettu_id` (`seettu_id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -269,6 +316,18 @@ ALTER TABLE `products`
   MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT for table `seettu_orders`
+--
+ALTER TABLE `seettu_orders`
+  MODIFY `seettu_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `seettu_items`
+--
+ALTER TABLE `seettu_items`
+  MODIFY `seettu_item_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -296,6 +355,13 @@ ALTER TABLE `installments`
 --
 ALTER TABLE `installment_schedule`
   ADD CONSTRAINT `installment_schedule_ibfk_1` FOREIGN KEY (`installment_id`) REFERENCES `installments` (`installment_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `seettu_items`
+--
+ALTER TABLE `seettu_items`
+  ADD CONSTRAINT `seettu_items_ibfk_1` FOREIGN KEY (`seettu_id`) REFERENCES `seettu_orders` (`seettu_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `seettu_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

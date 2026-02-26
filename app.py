@@ -34,6 +34,104 @@ def login():
 def dashboard():
     return render_template("dashboard.html")
 
+@app.route("/seettu")
+def seettu():
+    return render_template("seettu.html")
+
+@app.route("/api/seettu", methods=["POST"])
+def save_seettu():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor()
+
+        data = request.get_json(force=True)
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+
+        customer_name = data.get("customerName", "").strip()
+        customer_phone = data.get("customerPhone", "").strip()
+        customer_id_number = data.get("customerIdNumber", "").strip()
+        customer_address = data.get("customerAddress", "").strip()
+        total_amount = float(data.get("totalAmount", 0))
+        items = data.get("items", [])
+
+        if total_amount < 0:
+            return jsonify({"error": "Total amount cannot be negative"}), 400
+
+        if not items:
+            return jsonify({"error": "No seettu items provided"}), 400
+
+        cursor.execute(
+            """
+            INSERT INTO seettu_orders (customer_name, customer_phone, customer_id_number, customer_address, total_amount)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (
+                customer_name if customer_name else None,
+                customer_phone if customer_phone else None,
+                customer_id_number if customer_id_number else None,
+                customer_address if customer_address else None,
+                total_amount,
+            )
+        )
+
+        seettu_id = cursor.lastrowid
+
+        for item in items:
+            product_id = item.get("product_id")
+            qty = int(item.get("qty", 0))
+            price = float(item.get("price", 0))
+            total = float(item.get("total", 0))
+
+            if not product_id or qty <= 0:
+                return jsonify({"error": "Invalid item data"}), 400
+
+            if price < 0 or total < 0:
+                return jsonify({"error": "Item amounts cannot be negative"}), 400
+
+            cursor.execute(
+                """
+                INSERT INTO seettu_items (seettu_id, product_id, quantity, price, total)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (seettu_id, product_id, qty, price, total)
+            )
+
+            cursor.execute(
+                """
+                UPDATE products
+                SET quantity = quantity - %s
+                WHERE product_id = %s
+                """,
+                (qty, product_id)
+            )
+
+        conn.commit()
+
+        return jsonify({"success": True, "seettu_id": seettu_id})
+
+    except ValueError:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": "Invalid numeric value"}), 400
+    except mysql.connector.Error as err:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": str(err)}), 500
+    except Exception as err:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": str(err)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
 
 @app.route("/api/dashboard")
 def api_dashboard():
