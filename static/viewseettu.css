@@ -1,0 +1,122 @@
+* {
+    font-family: "Segoe UI", sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #333;
+    padding: 20px 20px 80px 20px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ff416c;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    width: 100%;
+    max-width: 520px;
+    padding: 12px 18px;
+    border: 2px solid #e1e6f1;
+    border-radius: 30px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#searchInput:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+}
+
+.orders {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.order-card {
+    border: 1px solid #e6eaf2;
+    border-radius: 14px;
+    padding: 18px;
+    background: #f9fbff;
+}
+
+.order-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-bottom: 12px;
+}
+
+.order-header div {
+    font-size: 14px;
+    color: #555;
+}
+
+.order-header strong {
+    color: #1f2a44;
+}
+
+.order-total {
+    margin-top: 6px;
+    font-weight: 700;
+    color: #1f2a44;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #edf0f5;
+}
+
+th {
+    background: #667eea;
+    color: #fff;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #6d7280;
+    border: 1px dashed #cfd6e6;
+    border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+    .order-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    th,
+    td {
+        font-size: 13px;
+    }
+}

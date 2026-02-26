@@ -38,6 +38,10 @@ def dashboard():
 def seettu():
     return render_template("seettu.html")
 
+@app.route("/viewseettu")
+def view_seettu():
+    return render_template("viewseettu.html")
+
 @app.route("/api/seettu", methods=["POST"])
 def save_seettu():
     conn = get_db_connection()
@@ -125,6 +129,72 @@ def save_seettu():
     except Exception as err:
         if conn:
             conn.rollback()
+        return jsonify({"error": str(err)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
+@app.route("/api/seettu-orders", methods=["GET"])
+def api_seettu_orders():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT seettu_id,
+                   customer_name,
+                   customer_phone,
+                   customer_id_number,
+                   customer_address,
+                   total_amount,
+                   created_at
+            FROM seettu_orders
+            ORDER BY seettu_id DESC
+            """
+        )
+        orders = cursor.fetchall()
+
+        seettu_ids = [o.get("seettu_id") for o in orders if o.get("seettu_id") is not None]
+        items_by_order = {sid: [] for sid in seettu_ids}
+
+        if seettu_ids:
+            placeholders = ",".join(["%s"] * len(seettu_ids))
+            cursor.execute(
+                f"""
+                SELECT si.seettu_item_id,
+                       si.seettu_id,
+                       si.product_id,
+                       p.product_name,
+                       p.category,
+                       si.quantity,
+                       si.price,
+                       si.total
+                FROM seettu_items si
+                LEFT JOIN products p ON p.product_id = si.product_id
+                WHERE si.seettu_id IN ({placeholders})
+                ORDER BY si.seettu_id, si.seettu_item_id
+                """,
+                tuple(seettu_ids)
+            )
+
+            for row in cursor.fetchall():
+                items_by_order.setdefault(row["seettu_id"], []).append(row)
+
+        for order in orders:
+            order["items"] = items_by_order.get(order.get("seettu_id"), [])
+
+        return jsonify(orders)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    except Exception as err:
         return jsonify({"error": str(err)}), 500
     finally:
         if cursor:
