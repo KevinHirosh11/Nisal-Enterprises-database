@@ -12,7 +12,7 @@ body {
 
 .dashboard {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
 }
 
 .sidebar {
@@ -20,6 +20,7 @@ body {
     background: linear-gradient(180deg, #667eea, #764ba2);
     color: white;
     padding: 20px;
+    align-self: stretch;
 }
 
 .sidebar h2 {
@@ -137,3 +138,19 @@ tr:nth-child(even) {
 .low { color: orange; font-weight: bold; }
 .out { color: red; font-weight: bold; }
 
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+    }
+    .main {
+        padding: 10px;
+    }
+    .cards {
+        grid-template-columns: 1fr;
+    }
+}
