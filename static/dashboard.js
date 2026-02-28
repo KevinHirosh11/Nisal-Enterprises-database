@@ -41,7 +41,9 @@ async function loadProducts() {
             return;
         }
         
-        products.forEach(product => {
+        const limitedProducts = products.slice(0, 5);
+        
+        limitedProducts.forEach(product => {
             const row = tableBody.insertRow();
             console.log('Adding product:', product);
             row.innerHTML = `
@@ -80,6 +82,10 @@ function searchProducts() {
         
         tr[i].style.display = found ? '' : 'none';
     }
+}
+
+function viewAllProducts() {
+    window.location.href = '/view';
 }
 
 function logout() {
